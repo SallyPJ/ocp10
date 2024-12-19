@@ -1,0 +1,36 @@
+# Virtual environment files
+.env
+.venv/
+env/
+venv/
+
+# Sensitive files
+*.env
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Django migration files
+**/migrations/
+!**/migrations/__init__.py
+
+# Local SQLite database
+db.sqlite3
+
+# Log files and cache
+*.log
+*.log.*
+.cache/
+.pytest_cache/
+
+# IDE configuration files (VS Code, PyCharm, etc.)
+.idea/
+.vscode/
+*.swp
+
+# Distribution and build directories
+build/
+dist/
+*.egg-info/
