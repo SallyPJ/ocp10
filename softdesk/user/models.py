@@ -21,9 +21,14 @@ class User(AbstractUser):
 
 
 class Contributor(models.Model):
+    ROLE_CHOICES = [
+        ('MANAGER', 'Project Manager'),
+        ('CONTRIBUTOR', 'Contributor'),
+    ]
     contributor_id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contributions')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='contributors')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='CONTRIBUTOR')
 
     class Meta:
         unique_together = ('user', 'project')
