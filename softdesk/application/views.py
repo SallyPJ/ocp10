@@ -5,14 +5,22 @@ from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
-
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from common.permissions import IsProjectManagerOrAdmin, IsContributorOrAdmin
 
 
 class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]  # Accessible à tout le monde
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsProjectManagerOrAdmin()]  # Réservé aux admins
+        elif self.action == 'list':
+            return [IsContributorOrAdmin()]  # Accessible aux utilisateurs connectés
+        return super().get_permissions()  # Défaut
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -56,8 +64,6 @@ class ProjectViewSet(ModelViewSet):
 
         # Appeler la méthode parente pour effectuer la suppression
         return super().destroy(request, *args, **kwargs)
-
-
 
 
 class IssueViewSet(ModelViewSet):

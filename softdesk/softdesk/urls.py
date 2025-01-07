@@ -23,19 +23,22 @@ from application.views import ProjectViewSet, IssueViewSet, CommentViewSet
 
 # Main router
 router = DefaultRouter()
-router.register('users', UserViewSet, basename='user')
-router.register('projects', ProjectViewSet, basename='project')
+router.register(r'users', UserViewSet, basename='user')
+router.register(r'projects', ProjectViewSet, basename='project')
+router.register(r'contributors', ContributorViewSet, basename='contributors')
+router.register(r'issues', IssueViewSet, basename='issues')
+router.register(r'comments', CommentViewSet, basename='comments')
 
 # Router imbriqué pour les issues (problèmes) d'un projet
-projects_router = NestedDefaultRouter(router, 'projects', lookup='project')
-projects_router.register('issues', IssueViewSet, basename='project-issues')
+projects_router = NestedDefaultRouter(router, r'projects', lookup='project')
+projects_router.register(r'issues', IssueViewSet, basename='project-issues')
 
 # Router imbriqué pour les commentaires d'une issue
-issues_router = NestedDefaultRouter(projects_router, 'issues', lookup='issue')
-issues_router.register('comments', CommentViewSet, basename='issue-comments')
+issues_router = NestedDefaultRouter(projects_router, r'issues', lookup='issue')
+issues_router.register(r'comments', CommentViewSet, basename='issue-comments')
 
 # Router imbriqué pour les contributeurs d'un projet
-projects_router.register('contributors', ContributorViewSet, basename='project-contributors')
+projects_router.register(r'contributors', ContributorViewSet, basename='project-contributors')
 
 
 

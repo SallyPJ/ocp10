@@ -7,11 +7,21 @@ from user.serializers import UserSerializer, ContributorSerializer
 from application.serializers import ProjectSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from user.permissions import IsAdminAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from common.permissions import IsAccountOwnerOrAdmin
 
 class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
-    permission_classes = [IsAdminAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]  # Accessible à tout le monde
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAccountOwnerOrAdmin()]  # Réservé aux admins
+        elif self.action == 'list':
+            return [IsAdminUser()]  # Accessible aux utilisateurs connectés
+        return super().get_permissions()  # Défaut
+
     def get_queryset(self):
         return User.objects.all()
 
@@ -29,22 +39,28 @@ class UserViewSet(ModelViewSet):
 
 
 class ContributorViewSet(ModelViewSet):
-
     serializer_class = ContributorSerializer
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]  # Accessible à tout le monde
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAccountOwnerOrAdmin()]  # Réservé aux admins
+        elif self.action == 'list':
+            return [IsAdminUser()]  # Accessible aux utilisateurs connectés
+        return super().get_permissions()  # Défaut
+
 
     def get_queryset(self):
+        """
+        Retourne soit tous les contributeurs, soit ceux liés à un projet spécifique.
+        """
+        project_id = self.kwargs.get('project_pk')  # Vérifie si un project_id est fourni
+        if project_id:
+            # Retourne uniquement les contributeurs d'un projet spécifique
+            return Contributor.objects.filter(project__project_id=project_id)
+        # Retourne tous les contributeurs si aucun project_id n'est spécifié
         return Contributor.objects.all()
-    @action(detail=False, methods=['get'])
-    def list_projects(self, request):
-        # Récupérer l'utilisateur connecté
-        user = request.user
 
-        # Obtenir tous les projets où l'utilisateur est contributeur
-        contributor_projects = Project.objects.filter(contributors__user=user)
-
-        # Sérialiser les projets
-        serializer = ProjectSerializer(contributor_projects, many=True)
-        return Response(serializer.data)
 
     def perform_create(self, serializer):
         # Récupérer le project_id depuis l'URL imbriquée
