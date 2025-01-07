@@ -24,6 +24,8 @@ class Project(models.Model):
     def __str__(self):
         return self.project_name
 
+    class Meta:
+        ordering = ['project_created_time']
 
 class Issue(models.Model):
 

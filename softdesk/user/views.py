@@ -1,15 +1,17 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+
 from .models import User, Contributor, Project
 from user.serializers import UserSerializer, ContributorSerializer
 from application.serializers import ProjectSerializer
 from rest_framework.response import Response
 from rest_framework import status
-
+from user.permissions import IsAdminAuthenticated
 
 class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
-
+    permission_classes = [IsAdminAuthenticated]
     def get_queryset(self):
         return User.objects.all()
 
@@ -43,3 +45,21 @@ class ContributorViewSet(ModelViewSet):
         # Sérialiser les projets
         serializer = ProjectSerializer(contributor_projects, many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        # Récupérer le project_id depuis l'URL imbriquée
+        project_id = self.kwargs.get('project_pk')
+
+        # Vérifier que le projet existe
+        try:
+            project = Project.objects.get(project_id=project_id)
+        except Project.DoesNotExist:
+            raise ValidationError("Le projet spécifié n'existe pas.")
+
+        # Vérifier si l'utilisateur est déjà contributeur du projet
+        user = serializer.validated_data['user']
+        if Contributor.objects.filter(project=project, user=user).exists():
+            raise ValidationError("Cet utilisateur est déjà contributeur de ce projet.")
+
+        # Associer le projet au contributeur et sauvegarder
+        serializer.save(project=project)
