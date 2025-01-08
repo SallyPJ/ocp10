@@ -24,7 +24,7 @@ class IsProjectManagerOrAdmin(BasePermission):
         return obj.contributors.filter(user=request.user, role='manager').exists()
 
 
-class IsContributorOrAdmin(BasePermission):
+class IsProjectContributorOrAdmin(BasePermission):
     """
     Permission permettant uniquement aux contributeurs ou à l'admin d'accéder au projet.
     """
@@ -35,3 +35,15 @@ class IsContributorOrAdmin(BasePermission):
             return True
         # Vérifie si l'utilisateur est contributeur du projet
         return obj.contributors.filter(user=request.user).exists()
+
+class IsAuthorOrAdmin(BasePermission):
+    """
+    Permission permettant uniquement à l'auteur ou à l'administrateur
+    de modifier ou supprimer une ressource.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Vérifie si l'utilisateur est admin
+        if request.user.is_superuser:
+            return True
+        # Vérifie si l'utilisateur est l'auteur de la ressource
+        return getattr(obj, 'author', None) == request.user

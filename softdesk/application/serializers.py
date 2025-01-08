@@ -5,9 +5,9 @@ from .models import Project, Issue, Comment
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['project_id', 'project_name', 'project_description', 'project_type', 'project_author',
-                  'project_created_time']
-        read_only_fields = ['project_author', 'project_created_time']
+        fields = ['id', 'name', 'description', 'type', 'author',
+                  'created_time']
+        read_only_fields = ['author', 'created_time']
 
 
 class IssueSerializer(serializers.ModelSerializer):

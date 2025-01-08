@@ -8,19 +8,19 @@ from application.serializers import ProjectSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from common.permissions import IsAccountOwnerOrAdmin
+from common.permissions import IsAccountOwnerOrAdmin, IsProjectManagerOrAdmin, IsProjectContributorOrAdmin
 
 class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
         if self.action == 'create':
-            return [AllowAny()]  # Accessible à tout le monde
+            return [AllowAny()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAccountOwnerOrAdmin()]  # Réservé aux admins
+            return [IsAccountOwnerOrAdmin()]
         elif self.action == 'list':
-            return [IsAdminUser()]  # Accessible aux utilisateurs connectés
-        return super().get_permissions()  # Défaut
+            return [IsAdminUser()]
+        return super().get_permissions()  # Default
 
     def get_queryset(self):
         return User.objects.all()
@@ -42,12 +42,12 @@ class ContributorViewSet(ModelViewSet):
     serializer_class = ContributorSerializer
     def get_permissions(self):
         if self.action == 'create':
-            return [AllowAny()]  # Accessible à tout le monde
+            return [IsAuthenticated(), IsProjectManagerOrAdmin()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAccountOwnerOrAdmin()]  # Réservé aux admins
+            return [IsAuthenticated(), IsAccountOwnerOrAdmin()]
         elif self.action == 'list':
-            return [IsAdminUser()]  # Accessible aux utilisateurs connectés
-        return super().get_permissions()  # Défaut
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
+        return super().get_permissions()  # Default
 
 
     def get_queryset(self):

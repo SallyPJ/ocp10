@@ -10,22 +10,18 @@ class Project(models.Model):
         ('ios', 'iOS'),
         ('android', 'Android'),
     ]
-    project_id = models. UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-    project_name = models.CharField(max_length=100, null=False)
-    project_description = models.CharField(max_length=400, null=True, blank=True)
-    project_type = models.CharField(max_length=10, choices=PROJECT_TYPE_CHOICES)
-    project_author = models.ForeignKey('user.User', on_delete=models.CASCADE, null=False)
-    project_created_time = models.DateTimeField(auto_now_add=True)
+
+    name = models.CharField(max_length=100, null=False)
+    description = models.CharField(max_length=400, null=True, blank=True)
+    type = models.CharField(max_length=10, choices=PROJECT_TYPE_CHOICES)
+    author = models.ForeignKey('user.User', on_delete=models.CASCADE, null=False)
+    created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.project_name
+        return self.name
 
     class Meta:
-        ordering = ['project_created_time']
+        ordering = ['created_time']
 
 class Issue(models.Model):
 
@@ -47,23 +43,28 @@ class Issue(models.Model):
         ('done', 'Done'),
     ]
 
-    issue_name = models.CharField(max_length=100, null=False)
-    issue_description = models.CharField(max_length=400, null=True, blank=True)
-    issue_priority = models.CharField(max_length=10, choices=ISSUE_PRIORITY_CHOICES)
-    issue_tag = models.CharField(max_length=10, choices=ISSUE_TAG_CHOICES)
-    issue_status = models.CharField(max_length=11, choices=ISSUE_STATUS_CHOICES)
-    issue_author = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='issues_author', null=False)
+    name = models.CharField(max_length=100, null=False)
+    description = models.CharField(max_length=400, null=True, blank=True)
+    priority = models.CharField(max_length=10, choices=ISSUE_PRIORITY_CHOICES)
+    tag = models.CharField(max_length=10, choices=ISSUE_TAG_CHOICES)
+    status = models.CharField(max_length=11, choices=ISSUE_STATUS_CHOICES)
+    author = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='issues_author', null=False)
     project = models.ForeignKey('application.Project', on_delete=models.CASCADE, related_name='issues', null=False)
-    issue_assignee = models.ForeignKey('user.Contributor', on_delete=models.CASCADE,
+    assignee = models.ForeignKey('user.Contributor', on_delete=models.CASCADE,
                                        related_name='assigned_issues')
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.issue_name
+        return self.name
 
 
 class Comment(models.Model):
-    comment_description = models.CharField(max_length=400, null=False)
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    description = models.CharField(max_length=400, null=False)
     author = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='comments', null=False)
     issue = models.ForeignKey('Issue', on_delete=models.CASCADE, related_name='comments', null=False)
     created_time = models.DateTimeField(auto_now_add=True)

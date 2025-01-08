@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from common.permissions import IsProjectManagerOrAdmin, IsContributorOrAdmin
+from common.permissions import IsProjectManagerOrAdmin, IsProjectContributorOrAdmin, IsAuthorOrAdmin
 
 
 class ProjectViewSet(ModelViewSet):
@@ -17,9 +17,9 @@ class ProjectViewSet(ModelViewSet):
         if self.action == 'create':
             return [IsAuthenticated()]  # Accessible à tout le monde
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsProjectManagerOrAdmin()]  # Réservé aux admins
+            return [IsAuthenticated(), IsProjectManagerOrAdmin()]  # Réservé aux admins
         elif self.action == 'list':
-            return [IsContributorOrAdmin()]  # Accessible aux utilisateurs connectés
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]  # Accessible aux utilisateurs connectés
         return super().get_permissions()  # Défaut
 
     def get_queryset(self):
@@ -70,8 +70,30 @@ class IssueViewSet(ModelViewSet):
     queryset = Issue.objects.all()
     serializer_class = IssueSerializer
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAuthorOrAdmin()]
+        elif self.action == 'list':
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        # Filtrer les issues visibles uniquement pour les projets auxquels l'utilisateur est contributeur
+        return Issue.objects.filter(project__contributors__user=self.request.user)
+
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAuthorOrAdmin()]
+        elif self.action == 'list':
+            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
+        return super().get_permissions()
 
 

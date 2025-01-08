@@ -25,9 +25,9 @@ from application.views import ProjectViewSet, IssueViewSet, CommentViewSet
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'projects', ProjectViewSet, basename='project')
-router.register(r'contributors', ContributorViewSet, basename='contributors')
-router.register(r'issues', IssueViewSet, basename='issues')
-router.register(r'comments', CommentViewSet, basename='comments')
+#router.register(r'contributors', ContributorViewSet, basename='contributors')
+#router.register(r'issues', IssueViewSet, basename='issues')
+#router.register(r'comments', CommentViewSet, basename='comments')
 
 # Router imbriqué pour les issues (problèmes) d'un projet
 projects_router = NestedDefaultRouter(router, r'projects', lookup='project')
