@@ -5,10 +5,10 @@ import uuid
 class Project(models.Model):
 
     PROJECT_TYPE_CHOICES = [
-        ('backend', 'Back-end'),
-        ('frontend', 'Front-end'),
-        ('ios', 'iOS'),
-        ('android', 'Android'),
+        ('BACKEND', 'Back-end'),
+        ('FRONTEND', 'Front-end'),
+        ('IOS', 'iOS'),
+        ('ANDROID', 'Android'),
     ]
 
     name = models.CharField(max_length=100, null=False)
@@ -26,32 +26,32 @@ class Project(models.Model):
 class Issue(models.Model):
 
     ISSUE_PRIORITY_CHOICES = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
     ]
 
     ISSUE_TAG_CHOICES = [
-        ('bug', 'Bug'),
-        ('task', 'Task'),
-        ('feature', 'Feature'),
+        ('BUG', 'Bug'),
+        ('TASK', 'Task'),
+        ('FEATURE', 'Feature'),
     ]
 
     ISSUE_STATUS_CHOICES = [
-        ('to_do', 'To do'),
-        ('in_progress', 'In progress'),
-        ('done', 'Done'),
+        ('TO_DO', 'To do'),
+        ('IN_PROGRESS', 'In progress'),
+        ('DONE', 'Done'),
     ]
 
     name = models.CharField(max_length=100, null=False)
     description = models.CharField(max_length=400, null=True, blank=True)
     priority = models.CharField(max_length=10, choices=ISSUE_PRIORITY_CHOICES)
     tag = models.CharField(max_length=10, choices=ISSUE_TAG_CHOICES)
-    status = models.CharField(max_length=11, choices=ISSUE_STATUS_CHOICES)
+    status = models.CharField(max_length=11, choices=ISSUE_STATUS_CHOICES, default='TO_DO')
     author = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='issues_author', null=False)
     project = models.ForeignKey('application.Project', on_delete=models.CASCADE, related_name='issues', null=False)
     assignee = models.ForeignKey('user.Contributor', on_delete=models.CASCADE,
-                                       related_name='assigned_issues')
+                                       related_name='assignee_issues')
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -141,6 +142,19 @@ from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'softdesk.urls.schema_view',  # Le chemin vers votre schema_view
+    'USE_SESSION_AUTH': False,  # Désactiver l'authentification par session
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        },
+    },
+    'JSON_EDITOR': True,  # Activer l'éditeur JSON pour les requêtes
 }
 
 CORS_ALLOWED_ORIGINS = [

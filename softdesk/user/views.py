@@ -1,7 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-
+from rest_framework import status
+from rest_framework.response import Response
 from .models import User, Contributor, Project
 from user.serializers import UserSerializer, ContributorSerializer
 from application.serializers import ProjectSerializer
@@ -40,11 +41,10 @@ class UserViewSet(ModelViewSet):
 
 class ContributorViewSet(ModelViewSet):
     serializer_class = ContributorSerializer
+    http_method_names = ['get', 'post', 'delete']
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action  in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsProjectManagerOrAdmin()]
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsAccountOwnerOrAdmin()]
         elif self.action == 'list':
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         return super().get_permissions()  # Default
@@ -57,7 +57,7 @@ class ContributorViewSet(ModelViewSet):
         project_id = self.kwargs.get('project_pk')  # Vérifie si un project_id est fourni
         if project_id:
             # Retourne uniquement les contributeurs d'un projet spécifique
-            return Contributor.objects.filter(project__project_id=project_id)
+            return Contributor.objects.filter(project_id=project_id)
         # Retourne tous les contributeurs si aucun project_id n'est spécifié
         return Contributor.objects.all()
 
@@ -68,7 +68,7 @@ class ContributorViewSet(ModelViewSet):
 
         # Vérifier que le projet existe
         try:
-            project = Project.objects.get(project_id=project_id)
+            project = Project.objects.get(id=project_id)
         except Project.DoesNotExist:
             raise ValidationError("Le projet spécifié n'existe pas.")
 
@@ -79,3 +79,23 @@ class ContributorViewSet(ModelViewSet):
 
         # Associer le projet au contributeur et sauvegarder
         serializer.save(project=project)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Supprime un contributeur d'un projet.
+        """
+        project_id = self.kwargs.get('project_pk')  # Récupère l'ID du projet depuis l'URL
+        contributor_id = self.kwargs.get('pk')  # Récupère l'ID du contributeur depuis l'URL
+
+        # Vérifie si le contributeur appartient bien au projet
+        try:
+            contributor = Contributor.objects.get(id=contributor_id, project__id=project_id)
+        except Contributor.DoesNotExist:
+            return Response(
+                {"detail": "Contributeur introuvable pour ce projet."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Supprime le contributeur
+        contributor.delete()
+        return Response({"detail": "Contributeur supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)

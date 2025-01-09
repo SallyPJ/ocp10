@@ -23,5 +23,5 @@ class UserSerializer(serializers.ModelSerializer):
 class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
-        fields = ['contributor_id', 'user', 'project']
-        read_only_fields = ['contributor_id', 'project']
+        fields = ['id', 'user', 'project']
+        read_only_fields = ['id', 'project']
