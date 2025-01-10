@@ -45,11 +45,11 @@ projects_router.register(r'contributors', ContributorViewSet, basename='project-
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="API Documentation",
+        title="SoftDesk API",
         default_version='v1',
-        description="Description de votre API",
+        description="API documentation for SoftDesk projects.",
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="contact@votredomaine.com"),
+        contact=openapi.Contact(email="polonio.sally@gmail.com"),
         license=openapi.License(name="MIT License"),
     ),
     public=True,

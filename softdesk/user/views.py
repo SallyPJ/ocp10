@@ -1,3 +1,5 @@
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -49,7 +51,43 @@ class ContributorViewSet(ModelViewSet):
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         return super().get_permissions()  # Default
 
-
+    @swagger_auto_schema(
+        operation_summary="List contributors",
+        operation_description=(
+                "Retrieve a list of contributors for a specific project.\n\n"
+                "**Permissions required:**\n"
+                "- `IsAuthenticated`\n"
+                "- `IsProjectContributorOrAdmin` (only contributors or admins can access this endpoint)"
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                'project_pk',
+                openapi.IN_PATH,
+                description="The primary key of the project.",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+            openapi.Parameter(
+                'page',
+                openapi.IN_QUERY,
+                description="A page number within the paginated result set.",
+                type=openapi.TYPE_INTEGER,
+                required=False
+            )
+        ],
+        responses={
+            200: openapi.Response("Contributors retrieved successfully.", ContributorSerializer(many=True)),
+            401: openapi.Response(
+                "Unauthorized. Authentication credentials were not provided.",
+                examples={"application/json": {"detail": "Authentication credentials were not provided."}}
+            ),
+            403: openapi.Response(
+                "Forbidden. You do not have permission to perform this action.",
+                examples={"application/json": {"detail": "You do not have permission to perform this action."}}
+            ),
+        },
+        security=[{"Bearer": []}]
+    )
     def get_queryset(self):
         """
         Retourne soit tous les contributeurs, soit ceux liés à un projet spécifique.

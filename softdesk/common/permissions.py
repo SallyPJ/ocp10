@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import PermissionDenied
 
 
 class IsAccountOwnerOrAdmin(BasePermission):
@@ -45,5 +46,11 @@ class IsAuthorOrAdmin(BasePermission):
         # Vérifie si l'utilisateur est admin
         if request.user.is_superuser:
             return True
-        # Vérifie si l'utilisateur est l'auteur de la ressource
-        return getattr(obj, 'author', None) == request.user
+        # Vérifier si l'utilisateur est l'auteur de l'issue
+        if obj.author == request.user:
+            # Vérifier si l'auteur est également un contributeur au projet
+            if obj.project.contributors.filter(user=request.user).exists():
+                return True
+            else:
+                raise PermissionDenied("The issue author must also be a contributor to the associated project.")
+
