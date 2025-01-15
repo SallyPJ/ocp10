@@ -66,14 +66,13 @@ It allows users to create and manage projects and report issues.
     python manage.py runserver
     ```
 
-## Endpoints
-
-### Documentation and Tests
-
-http://localhost:8000/swagger/
+### Documentation
 http://localhost:8000/redoc/
 
-### Paths
+### Tests
+http://localhost:8000/swagger/
+
+### Endpoints
 
 ## Authentication
 - `POST /api/token/`: Obtain JWT tokens.
@@ -125,8 +124,8 @@ http://localhost:8000/redoc/
 | ViewSet                | Action           | Permissions Required                             |
 |------------------------|------------------|--------------------------------------------------|
 | **ProjectViewSet**     | `create`         | `IsAuthenticated`                                |
-|                        | `list`           | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
-|                        | `retrieve`       | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `list`           | `IsAuthenticated`,                               |
+|                        | `retrieve`       | `IsAuthenticated`,                               |
 |                        | `update`         | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
 |                        | `partial_update` | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
 |                        | `destroy`        | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
