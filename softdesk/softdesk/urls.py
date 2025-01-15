@@ -27,20 +27,17 @@ from application.views import ProjectViewSet, IssueViewSet, CommentViewSet
 # Main router
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
-router.register(r'projects', ProjectViewSet, basename='project')
-# router.register(r'contributors', ContributorViewSet, basename='contributors')
-# router.register(r'issues', IssueViewSet, basename='issues')
-# router.register(r'comments', CommentViewSet, basename='comments')
+router.register(r'projects', ProjectViewSet, basename='projects')
 
-# Router imbriqué pour les issues (problèmes) d'un projet
+# Nested router for issues within a project
 projects_router = NestedDefaultRouter(router, r'projects', lookup='project')
 projects_router.register(r'issues', IssueViewSet, basename='project-issues')
 
-# Router imbriqué pour les commentaires d'une issue
+# Nested router for comments within an issue
 issues_router = NestedDefaultRouter(projects_router, r'issues', lookup='issue')
 issues_router.register(r'comments', CommentViewSet, basename='issue-comments')
 
-# Router imbriqué pour les contributeurs d'un projet
+# Nested router for contributors within a project
 projects_router.register(r'contributors', ContributorViewSet, basename='project-contributors')
 
 schema_view = get_schema_view(

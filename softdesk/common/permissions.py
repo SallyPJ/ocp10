@@ -1,56 +1,76 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
+from user.models import Contributor
 
 
 class IsAccountOwnerOrAdmin(BasePermission):
     """
-    Permission permettant à l'admin ou à l'utilisateur connecté de modifier/supprimer son propre compte.
+    Permission allowing only the admin or the authenticated user to modify/delete their own account.
     """
     def has_object_permission(self, request, view, obj):
         # L'utilisateur est autorisé s'il est admin ou s'il agit sur son propre compte
-        return request.user.is_superuser or obj == request.user
+        return request.user.is_staff or obj == request.user
 
 
 class IsProjectManagerOrAdmin(BasePermission):
     """
-    Permission permettant uniquement aux managers d'un projet ou aux administrateurs d'ajouter des contributeurs.
+    Permission allowing only project managers or administrators to add contributors.
     """
 
     def has_object_permission(self, request, view, obj):
-        # Vérifier si l'utilisateur est un administrateur
-        if request.user.is_superuser:
+        # Admins ont toujours accès
+        if request.user.is_staff:
             return True
 
-        # Vérifier si l'utilisateur a le statut "manager" dans le projet
-        return obj.contributors.filter(user=request.user, role='manager').exists()
+        # Check if the user is a manager of the project
+        if Contributor.objects.filter(
+            project=obj,
+            user=request.user,
+            role='MANAGER'
+        ).exists():
+            return True
 
 
 class IsProjectContributorOrAdmin(BasePermission):
     """
-    Permission permettant uniquement aux contributeurs ou à l'admin d'accéder au projet.
+     Permission allowing only contributors or administrators to access the project.
     """
 
-    def has_object_permission(self, request, view, obj):
-        # Vérifie si l'utilisateur est admin
-        if request.user.is_superuser:
+    def has_permission(self, request, view):
+        # Administrators always have access
+        if request.user.is_staff:
             return True
-        # Vérifie si l'utilisateur est contributeur du projet
-        return obj.contributors.filter(user=request.user).exists()
+
+        # Retrieve project_pk from kwargs
+        project_pk = view.kwargs.get('project_pk')
+        if not project_pk:
+            raise PermissionDenied("Le projet n'a pas été spécifié dans l'URL.")
+
+        # Check if the user is a contributor to the project
+        is_contributor = Contributor.objects.filter(
+            project=project_pk,
+            user=request.user
+        ).exists()
+
+        if is_contributor:
+            return True
+
+        # Deny access if the user is neither an admin nor a contributor
+        raise PermissionDenied("Vous devez être administrateur ou contributeur pour accéder à cet élément.")
+
 
 class IsAuthorOrAdmin(BasePermission):
     """
-    Permission permettant uniquement à l'auteur ou à l'administrateur
-    de modifier ou supprimer une ressource.
+    Permission allowing only the author or an administrator to modify or delete a resource.
     """
     def has_object_permission(self, request, view, obj):
-        # Vérifie si l'utilisateur est admin
-        if request.user.is_superuser:
+        # Check if the user is an admin
+        if request.user.is_staff:
             return True
-        # Vérifier si l'utilisateur est l'auteur de l'issue
+        # Check if the user is the author of the issue
         if obj.author == request.user:
-            # Vérifier si l'auteur est également un contributeur au projet
+            # Check if the author is also a contributor to the project
             if obj.project.contributors.filter(user=request.user).exists():
                 return True
             else:
                 raise PermissionDenied("The issue author must also be a contributor to the associated project.")
-

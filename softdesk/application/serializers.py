@@ -24,7 +24,7 @@ class IssueSerializer(serializers.ModelSerializer):
 
     def _get_project(self):
         """
-        Récupère et valide le projet à partir du project_pk dans l'URL.
+        Retrieve and validate the project based on project_pk in the URL.
         """
         project_pk = self.context['view'].kwargs.get('project_pk')
         if not project_pk:
@@ -36,22 +36,22 @@ class IssueSerializer(serializers.ModelSerializer):
 
     def validate_assignee(self, value):
         """
-        Valide que l'assignee est un contributeur du projet.
+        Validate that the assignee is a contributor to the project.
         """
         project = self._get_project()  # Utilise la méthode utilitaire pour obtenir le projet
 
-        # Vérifie si l'assignee est un contributeur
+        # Check if the assignee is a contributor
         if not Contributor.objects.filter(user=value.user, project=project).exists():
             raise serializers.ValidationError("The assignee must be a contributor of the specified project.")
         return value
 
     def create(self, validated_data):
         """
-        Ajoute automatiquement le projet et l'auteur lors de la création d'une issue.
+        Automatically add the project and author when creating an issue.
         """
-        project = self._get_project()  # Utilise la méthode utilitaire pour obtenir le projet
+        project = self._get_project()   # Use utility method to get the project
 
-        # Assigner automatiquement le projet et l'auteur
+        # Automatically assign the project and author
         validated_data['project'] = project
         validated_data['author'] = self.context['request'].user
 
@@ -67,11 +67,13 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['author', 'author_username', 'created_time', 'issue']
 
     def create(self, validated_data):
-        # Ajouter automatiquement l'utilisateur connecté comme auteur
+        """
+        Automatically add the authenticated user as the author of the comment.
+        """
         user = self.context['request'].user
         issue_pk = self.context['view'].kwargs.get('issue_pk')
 
-        # Vérifier que l'utilisateur est un contributeur du projet de l'issue
+        # Check if the user is a contributor to the project's issue
         try:
             issue = Issue.objects.get(pk=issue_pk)
             is_contributor = Contributor.objects.filter(user=user, project=issue.project).exists()
@@ -80,7 +82,7 @@ class CommentSerializer(serializers.ModelSerializer):
         except Issue.DoesNotExist:
             raise serializers.ValidationError("The issue does not exist.")
 
-        # Ajouter l'auteur et l'issue dans les données validées
+        # Add the author and issue to the validated data
         validated_data['author'] = user
         validated_data['issue'] = issue
         return super().create(validated_data)

@@ -2,10 +2,9 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Project, Issue, Comment
 from user.models import Contributor
 from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from common.permissions import IsProjectManagerOrAdmin, IsProjectContributorOrAdmin, IsAuthorOrAdmin
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -24,12 +23,10 @@ class ProjectViewSet(ModelViewSet):
        - `update`, `partial_update`, `destroy`: Only authenticated users who are project managers or admins.
        - `list`: Only authenticated users who are contributors.
        """
-        if self.action == 'create':
+        if self.action in ['create', 'retrieve', 'list']:
             return [IsAuthenticated()]
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsProjectManagerOrAdmin()]
-        elif self.action in ['retrieve', 'list']:
-            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         return super().get_permissions()  # Default
 
     @swagger_auto_schema(
@@ -64,7 +61,7 @@ class ProjectViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_staff:
             return Project.objects.all()
         projects = Project.objects.filter(contributors__user=self.request.user)
         if not projects.exists():
@@ -75,13 +72,14 @@ class ProjectViewSet(ModelViewSet):
         operation_summary="Create a new project",
         tags=["Projects"],
         operation_description=(
-                "Create a new project and associate the requesting user as the author.\n" 
-                "The user is also added as a contributor with the role 'MANAGER'.   \n\n"
+                "Create a new project and associate the requesting user as the author.\n"
+                "The user is also added as a contributor with the role 'MANAGER'.\n\n"
                 "**Permissions required:**\n"
                 "- `IsAuthenticated`\n"
                 "- `IsProjectContributorOrAdmin`\n\n"
                 "**Security:**\n"
                 "- Bearer Token authentication is required."
+
         ),
         security=[{"Bearer": []}],
         responses={
@@ -271,8 +269,41 @@ class IssueViewSet(ModelViewSet):
     ViewSet for managing issues.
     Provides CRUD operations for issues with specific permissions.
     """
-    queryset = Issue.objects.all()
+
     serializer_class = IssueSerializer
+
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        """
+        Retrieve the list of issues for the project specified in the URL.
+        """
+        project_pk = self.kwargs.get('project_pk')  # Récupère l'ID du projet depuis l'URL
+        if not project_pk:
+            raise PermissionDenied("Le projet n'a pas été spécifié dans l'URL.")
+
+        # Check if the project exists
+        try:
+            project = Project.objects.get(pk=project_pk)
+        except Project.DoesNotExist:
+            raise PermissionDenied("Le projet spécifié n'existe pas.")
+
+        # Filter issues by project
+        return Issue.objects.filter(project=project)
+
+    def get_object(self):
+        """
+        Retrieve the issue specified in the URL.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        issue_pk = self.kwargs.get(self.lookup_field)  # Par défaut, `pk`
+
+        # Check if the issue exists
+        try:
+            obj = queryset.get(pk=issue_pk)
+            return obj
+        except Issue.DoesNotExist:
+            raise PermissionDenied("Cette issue n'existe pas dans ce projet.")
 
     def get_permissions(self):
         """
@@ -435,16 +466,48 @@ class IssueViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
+
     serializer_class = CommentSerializer
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        """
+        Retrieve the list of comments for the issue specified in the URL.
+        """
+        project_pk = self.kwargs.get('project_pk')
+        issue_pk = self.kwargs.get('issue_pk')
+
+        # Check if the project and issue exists
+        try:
+            project = Project.objects.get(pk=project_pk)
+        except Project.DoesNotExist:
+            raise PermissionDenied("Le projet spécifié n'existe pas.")
+
+        try:
+            issue = Issue.objects.get(pk=issue_pk, project=project)
+        except Issue.DoesNotExist:
+            raise PermissionDenied("L'issue spécifiée n'existe pas dans ce projet.")
+
+        return Comment.objects.filter(issue=issue)
+
+    def get_object(self):
+        """
+        Retrieve a specific comment linked to an issue and project.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        comment_pk = self.kwargs.get(self.lookup_field)
+
+        try:
+            obj = queryset.get(pk=comment_pk)
+            return obj
+        except Comment.DoesNotExist:
+            raise PermissionDenied("Ce commentaire n'existe pas pour l'issue spécifiée.")
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'list', 'retrieve']:
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsAuthorOrAdmin()]
-        elif self.action in ['list', 'retrieve']:
-            return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         return super().get_permissions()
 
     @swagger_auto_schema(
