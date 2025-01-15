@@ -12,7 +12,6 @@ from drf_yasg import openapi
 from rest_framework.exceptions import PermissionDenied
 
 
-
 class ProjectViewSet(ModelViewSet):
 
     queryset = Project.objects.all()
@@ -80,7 +79,7 @@ class ProjectViewSet(ModelViewSet):
                 "The user is also added as a contributor with the role 'MANAGER'.   \n\n"
                 "**Permissions required:**\n"
                 "- `IsAuthenticated`\n"
-                "- `IsProjectContributorOrAdmin`\n"
+                "- `IsProjectContributorOrAdmin`\n\n"
                 "**Security:**\n"
                 "- Bearer Token authentication is required."
         ),
@@ -292,7 +291,7 @@ class IssueViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="List issues",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Retrieve a list of issues for projects where the authenticated user is a contributor.\n\n"
                 "**Permissions required:**\n"
@@ -310,9 +309,10 @@ class IssueViewSet(ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
     @swagger_auto_schema(
         operation_summary="Retrieve an issue",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Retrieve details of a specific issue by its ID.\n\n"
                 "**Permissions required:**\n"
@@ -334,7 +334,7 @@ class IssueViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Create an issue",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Create a new issue for a project. Only contributors can create issues.\n\n"
                 "**Permissions required:**\n"
@@ -356,7 +356,7 @@ class IssueViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Update an issue",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Update an existing issue. Only the issue author or admins can update it.\n\n"
                 "**Permissions required:**\n"
@@ -379,7 +379,7 @@ class IssueViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Partially update an issue",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Partially update specific fields of an existing issue. "
                 "Only the issue author or admins can perform this action.\n\n"
@@ -410,9 +410,10 @@ class IssueViewSet(ModelViewSet):
     )
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+
     @swagger_auto_schema(
         operation_summary="Delete an issue",
-        tags=["Projects/Issues"],
+        tags=["Issues"],
         operation_description=(
                 "Delete an issue. Only the issue author or admins can delete it.\n\n"
                 "**Permissions required:**\n"
@@ -432,6 +433,7 @@ class IssueViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -447,9 +449,10 @@ class CommentViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="List all comments of an issue",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
-                "Retrieve a list of comments linked to an issue. Only contributors to the project can access the comments.\n\n"
+                "Retrieve a list of comments linked to an issue. Only contributors "
+                "to the project can access the comments.\n\n"
                 "**Permissions required:**\n"
                 "- `IsAuthenticated`\n"
                 "- `IsProjectContributorOrAdmin`\n\n"
@@ -470,7 +473,7 @@ class CommentViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Retrieve a comment",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
                 "Retrieve a specific comment by its ID. Only contributors to the project can access the comment.\n\n"
                 "**Permissions required:**\n"
@@ -492,9 +495,10 @@ class CommentViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Create a comment",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
-                "Create a new comment. Only contributors to the project can create comments.\n\n"
+                "Create a new comment. The comment have to be linked to an issue. "
+                "Only contributors to the project can create comments.\n\n"
                 "**Permissions required:**\n"
                 "- `IsAuthenticated`\n"
                 "- `IsProjectContributorOrAdmin`\n\n"
@@ -517,7 +521,7 @@ class CommentViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Update a comment",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
                 "Update an existing comment. Only the author of the comment or admins can perform this action.\n\n"
                 "**Permissions required:**\n"
@@ -536,14 +540,14 @@ class CommentViewSet(ModelViewSet):
         },
     )
     def update(self, request, *args, **kwargs):
-        comment = self.get_object()
         return super().update(request, *args, **kwargs)
 
     @swagger_auto_schema(
         operation_summary="Partially update a comment",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
-                "Partially update specific fields of an existing comment. Only the author or admins can perform this action.\n\n"
+                "Partially update specific fields of an existing comment. "
+                "Only the author or admins can perform this action.\n\n"
                 "**Permissions required:**\n"
                 "- `IsAuthenticated`\n"
                 "- `IsAuthorOrAdmin`\n\n"
@@ -564,7 +568,7 @@ class CommentViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Delete a comment",
-        tags=["Projects/Issues/Comments"],
+        tags=["Comments"],
         operation_description=(
                 "Delete an existing comment. Only the author or admins can delete a comment.\n\n"
                 "**Permissions required:**\n"
@@ -583,7 +587,3 @@ class CommentViewSet(ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
-
-
-

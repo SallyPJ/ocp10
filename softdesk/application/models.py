@@ -23,6 +23,7 @@ class Project(models.Model):
     class Meta:
         ordering = ['created_time']
 
+
 class Issue(models.Model):
 
     ISSUE_PRIORITY_CHOICES = [
@@ -51,7 +52,7 @@ class Issue(models.Model):
     author = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='issues_author', null=False)
     project = models.ForeignKey('application.Project', on_delete=models.CASCADE, related_name='issues', null=False)
     assignee = models.ForeignKey('user.Contributor', on_delete=models.CASCADE,
-                                       related_name='assignee_issues')
+                                 related_name='assignee_issues')
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

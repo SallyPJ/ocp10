@@ -3,25 +3,16 @@ from .models import User, Contributor
 from rest_framework.exceptions import ValidationError
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','password', 'username', 'age', 'can_be_contacted', 'can_data_be_shared', 'first_name',
+        fields = ['id', 'password', 'username', 'age', 'can_be_contacted', 'can_data_be_shared', 'first_name',
                   'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'date_joined']
         extra_kwargs = {
             'password': {'write_only': True},
             'is_staff': {'required': False},
             'is_superuser': {'required': False},
         }
-
-    def create(self, validated_data):
-        # Hacher le mot de passe avant de créer l'utilisateur
-        password = validated_data.pop('password')
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
 
     def create(self, validated_data):
         """
@@ -55,6 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data.pop('is_staff', None)  # Remove `is_staff` if present
             validated_data.pop('is_superuser', None)  # Remove `is_superuser` if present
         return super().update(instance, validated_data)
+
 
 class ContributorSerializer(serializers.ModelSerializer):
     class Meta:

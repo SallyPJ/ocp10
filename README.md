@@ -68,21 +68,24 @@ It allows users to create and manage projects and report issues.
 
 ## Endpoints
 
-### Documentation
+### Documentation and Tests
 
 http://localhost:8000/swagger/
+http://localhost:8000/redoc/
 
-### Authentication
+### Paths
+
+## Authentication
 - `POST /api/token/`: Obtain JWT tokens.
 - `POST /api/token/refresh/`: Refresh JWT tokens.
 
-### Users
+## Users
 - `GET /users/`: List all users (Admin only).
 - `POST /users/`: Create a new user (accessible to everyone).
 - `GET /users/{id}/`: Retrieve a specific user's details (Admin or the user themselves).
 - `PATCH /users/{id}/`: Update a user's details (Admin or the user themselves).
 - `DELETE /users/{id}/`: Delete a user (Admin or the user themselves).
-### Projects
+## Projects
 - `GET /api/projects/`: List all projects accessible to the user.
 - `POST /api/projects/`: Create a new project.
 - `GET /api/projects/{id}/`: Retrieve project details.
@@ -90,7 +93,7 @@ http://localhost:8000/swagger/
 - `PATCH /api/projects/{id}/`: Partially update a project.
 - `DELETE /api/projects/{id}/`: Delete a project.
 
-### Issues
+## Issues
 - `GET /api/projects/{project_pk}/issues/`: List all issues in a project.
 - `POST /api/projects/{project_pk}/issues/`: Create a new issue.
 - `GET /api/projects/{project_pk}/issues/{id}/`: Retrieve issue details.
@@ -98,7 +101,7 @@ http://localhost:8000/swagger/
 - `PATCH /api/projects/{project_pk}/issues/{id}/`: Partially update an issue.
 - `DELETE /api/projects/{project_pk}/issues/{id}/`: Delete an issue.
 
-### Comments
+## Comments
 - `GET /api/projects/{project_pk}/issues/{issue_pk}/comments/`: List all comments on an issue.
 - `POST /api/projects/{project_pk}/issues/{issue_pk}/comments/`: Create a new comment.
 - `GET /api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/`: Retrieve comment details.
@@ -106,7 +109,7 @@ http://localhost:8000/swagger/
 - `PATCH /api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/`: Partially update a comment.
 - `DELETE /api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/`: Delete a comment.
 
-### Contributors
+## Contributors
 - `GET /api/projects/{project_pk}/contributors/`: List all contributors to a project.
 - `POST /api/projects/{project_pk}/contributors/`: Add a contributor to a project.
 - `DELETE /api/projects/{project_pk}/contributors/{id}/`: Remove a contributor from a project.
@@ -119,15 +122,23 @@ http://localhost:8000/swagger/
 3. **Contributor**: Can create, update, and delete issues and comments in their projects.
 
 ### Permissions Matrix
-| Action                 | Admin       | Project Manager | Contributor |
-|------------------------|-------------|-----------------|-------------|
-| Create Project         | ✅          | ✅              | ❌          |
-| Update Project         | ✅          | ✅              | ❌          |
-| Delete Project         | ✅          | ✅              | ❌          |
-| Create Issue           | ✅          | ✅              | ✅          |
-| Update Issue           | ✅          | ❌              | ✅ (Author) |
-| Delete Issue           | ✅          | ❌              | ✅ (Author) |
-| Add Contributor        | ✅          | ✅              | ❌          |
+| Action                   | Admin | Project Manager | Contributor   | Unregistered User |
+|--------------------------|-------|-----------------|---------------|-------------------|
+| List Projects            | ✅     | ❌               | ❌             |          ❌         |
+| Retrieve a Project       | ✅     | ✅               | ❌             |            ❌       |
+| Create Project           | ✅     | ✅               | ❌             |          ❌         |
+| Update Project           | ✅     | ✅               | ❌             |         ❌         |
+| Delete Project           | ✅     | ✅               | ❌             |          ❌         |
+| List Issues              | ✅     | ✅               | ✅           |            ❌         |
+| Retrieve Issue         ✅ | ✅               | ✅           |            ❌             |
+| Create Issue             | ✅     | ✅               | ✅             |          ❌         |
+| Update Issue             | ✅     | ❌               | ✅ (if Author) |           ❌        |
+| Delete Issue             | ✅     | ❌               | ✅ (if Author) |           ❌        |
+| List comments            |  ✅ | ✅               | ✅           |            ❌                 |
+| List Contributors        | ✅     | ✅               | ✅             |           ❌        |
+| Add Contributor          | ✅     | ✅               | ❌             |            ❌       |
+| Delete Contributor       | ✅     | ✅               | ❌             |            ❌       |
+|                          |       |                 |               |                   |
 
 
 

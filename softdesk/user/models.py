@@ -20,6 +20,9 @@ class User(AbstractUser):
     can_be_contacted = models.BooleanField(default=False)
     can_data_be_shared = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['id']
+
 
 class Contributor(models.Model):
     ROLE_CHOICES = [
@@ -35,4 +38,3 @@ class Contributor(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.project.name}"
-

@@ -14,12 +14,14 @@ class ProjectSerializer(serializers.ModelSerializer):
 class IssueSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)
     assignee_username = serializers.CharField(source='assignee.user.username', read_only=True)
+
     class Meta:
         model = Issue
         fields = ['id', 'name', 'description', 'priority', 'tag', 'status', 'author',
                   'author_username', 'project', 'assignee', 'assignee_username',
                   'created_time']
         read_only_fields = ['author', 'author_username', 'assignee_username', 'created_time', 'project']
+
     def _get_project(self):
         """
         Récupère et valide le projet à partir du project_pk dans l'URL.
@@ -54,7 +56,6 @@ class IssueSerializer(serializers.ModelSerializer):
         validated_data['author'] = self.context['request'].user
 
         return super().create(validated_data)
-
 
 
 class CommentSerializer(serializers.ModelSerializer):
