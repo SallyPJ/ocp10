@@ -3,11 +3,8 @@ from drf_yasg import openapi
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework import status
-from rest_framework.response import Response
 from .models import User, Contributor, Project
 from user.serializers import UserSerializer, ContributorSerializer
-from application.serializers import ProjectSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
