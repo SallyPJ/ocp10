@@ -29,7 +29,7 @@ It allows users to create and manage projects and report issues.
 
 ## Tech Stack
 - **Backend**: Django Rest Framework (DRF)
-- **Database**: PostgreSQL (or other compatible relational databases)
+- **Database**: SQLite
 - **Authentication**: JWT (using `djangorestframework-simplejwt`)
 - **Documentation**: Swagger (using `drf-yasg`)
 
