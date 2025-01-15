@@ -122,25 +122,36 @@ http://localhost:8000/redoc/
 3. **Contributor**: Can create, update, and delete issues and comments in their projects.
 
 ### Permissions Matrix
-| Action                   | Admin | Project Manager | Contributor   | Unregistered User |
-|--------------------------|-------|-----------------|---------------|-------------------|
-| List Projects            | ✅     | ❌               | ❌             |          ❌         |
-| Retrieve a Project       | ✅     | ✅               | ❌             |            ❌       |
-| Create Project           | ✅     | ✅               | ❌             |          ❌         |
-| Update Project           | ✅     | ✅               | ❌             |         ❌         |
-| Delete Project           | ✅     | ✅               | ❌             |          ❌         |
-| List Issues              | ✅     | ✅               | ✅           |            ❌         |
-| Retrieve Issue         ✅ | ✅               | ✅           |            ❌             |
-| Create Issue             | ✅     | ✅               | ✅             |          ❌         |
-| Update Issue             | ✅     | ❌               | ✅ (if Author) |           ❌        |
-| Delete Issue             | ✅     | ❌               | ✅ (if Author) |           ❌        |
-| List comments            |  ✅ | ✅               | ✅           |            ❌                 |
-| List Contributors        | ✅     | ✅               | ✅             |           ❌        |
-| Add Contributor          | ✅     | ✅               | ❌             |            ❌       |
-| Delete Contributor       | ✅     | ✅               | ❌             |            ❌       |
-|                          |       |                 |               |                   |
-
-
+| ViewSet                | Action           | Permissions Required                             |
+|------------------------|------------------|--------------------------------------------------|
+| **ProjectViewSet**     | `create`         | `IsAuthenticated`                                |
+|                        | `list`           | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `retrieve`       | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `update`         | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
+|                        | `partial_update` | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
+|                        | `destroy`        | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
+| **IssueViewSet**       | `create`         | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `list`           | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `retrieve`       | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `update`         | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+|                        | `partial_update` | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+|                        | `destroy`        | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+| **CommentViewSet**     | `create`         | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `list`           | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `retrieve`       | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `update`         | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+|                        | `partial_update` | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+|                        | `destroy`        | `IsAuthenticated`, `IsAuthorOrAdmin`             |
+| **UserViewSet**        | `create`         | `AllowAny`                                       |
+|                        | `list`           | `IsAuthenticated`, `IsAdminUser`                 |
+|                        | `retrieve`       | `IsAuthenticated`, `IsAccountOwnerOrAdmin`       |
+|                        | `update`         | `IsAuthenticated`, `IsAccountOwnerOrAdmin`       |
+|                        | `partial_update` | `IsAuthenticated`, `IsAccountOwnerOrAdmin`       |
+|                        | `destroy`        | `IsAuthenticated`, `IsAccountOwnerOrAdmin`       |
+| **ContributorViewSet** | `create`         | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
+|                        | `list`           | `IsAuthenticated`, `IsProjectContributorOrAdmin` |
+|                        | `retrieve`       | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
+|                        | `destroy`        | `IsAuthenticated`, `IsProjectManagerOrAdmin`     |
 
 ## License
 This project is licensed under the MIT License.

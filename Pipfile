@@ -10,8 +10,11 @@ djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
 drf-nested-routers = "*"
 drf-yasg = "*"
+flake8 = "*"
+flake8-html = "*"
 
 [dev-packages]
+flake8 = "*"
 
 [requires]
 python_version = "3.12"
