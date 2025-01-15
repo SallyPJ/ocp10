@@ -43,7 +43,7 @@ It allows users to create and manage projects and report issues.
 1. Clone the repository:
     ```bash
     git clone https://github.com/SallyPJ/ocp10.git
-    cd softdesk
+    cd ocp10
     ```
 2. Set up the virtual environment and install dependencies using pipenv:
     ```bash
@@ -53,15 +53,19 @@ It allows users to create and manage projects and report issues.
     ```bash
     pipenv shell
     ```
-4. create migrations :
-    ```env
+4. Open the following folder in your terminal:
+     ```bash
+     cd softdesk
+     ```
+5. Create migrations :
+    ```bash
     python manage.py make migrations
     ```
-5. Apply migrations:
+6. Apply migrations:
     ```bash
     python manage.py migrate
     ```
-6. Run the development server:
+7. Run the development server:
     ```bash
     python manage.py runserver
     ```
@@ -117,8 +121,8 @@ http://localhost:8000/swagger/
 
 ### User Roles
 1. **Admin**: Full access to all resources.
-2. **Project Manager**: Can manage projects and contributors.
-3. **Contributor**: Can create, update, and delete issues and comments in their projects.
+2. **Project Manager**: Can manage projects and contributors ( Contributor with role : Manager).
+3. **Contributor**: Can create, update, and delete issues and comments in their projects (Contributor with role : Contributor).
 
 ### Permissions Matrix
 | ViewSet                | Action           | Permissions Required                             |
