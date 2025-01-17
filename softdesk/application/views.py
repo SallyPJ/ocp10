@@ -9,6 +9,8 @@ from common.permissions import IsProjectManagerOrAdmin, IsProjectContributorOrAd
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, ValidationError
+
 
 
 class ProjectViewSet(ModelViewSet):
@@ -320,13 +322,11 @@ class IssueViewSet(ModelViewSet):
        - `update`, `partial_update`, `destroy`: Only authenticated users who are authors or admins.
        - `list`: Only authenticated users who are contributors.
        """
-        if self.action == 'create':
+        if self.action in ['retrieve', 'list', 'create']:
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsAuthorOrAdmin()]
-        elif self.action in ['retrieve', 'list']:
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
-        return super().get_permissions()
+        return [IsAuthenticated()]
 
     @swagger_auto_schema(
         operation_summary="List issues",
@@ -505,18 +505,23 @@ class CommentViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         comment_pk = self.kwargs.get(self.lookup_field)
 
+        if not comment_pk:
+            raise ValidationError("The comment ID is missing or invalid.")
+
         try:
             obj = queryset.get(pk=comment_pk)
+            if obj is None:
+                raise NotFound("The requested comment is null or does not exist.")
             return obj
         except Comment.DoesNotExist:
-            raise PermissionDenied("Ce commentaire n'existe pas pour l'issue spécifiée.")
+            raise NotFound("The specified comment does not exist for this issue.")
 
     def get_permissions(self):
         if self.action in ['create', 'list', 'retrieve']:
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsAuthorOrAdmin()]
-        return super().get_permissions()
+            return [IsAuthenticated(), IsProjectContributorOrAdmin(), IsAuthorOrAdmin()]
+        return [IsAuthenticated()]
 
     @swagger_auto_schema(
         operation_summary="List all comments of an issue",

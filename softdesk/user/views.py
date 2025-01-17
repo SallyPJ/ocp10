@@ -182,11 +182,12 @@ class ContributorViewSet(ModelViewSet):
     queryset = Contributor.objects.none()
 
     def get_permissions(self):
-        if self.action in ['create', 'retrieve', 'destroy']:
+        if self.action in ['create', 'destroy']:
             return [IsAuthenticated(), IsProjectManagerOrAdmin()]
         elif self.action in ['list', 'retrieve']:
             return [IsAuthenticated(), IsProjectContributorOrAdmin()]
-        return super().get_permissions()  # Default
+        return [IsAuthenticated()]
+
 
     def get_queryset(self):
         """
@@ -266,6 +267,7 @@ class ContributorViewSet(ModelViewSet):
         }
     )
     def create(self, request, *args, **kwargs):
+        self.check_permissions(request)
         project_id = self.kwargs.get('project_pk')
         try:
             project = Project.objects.get(id=project_id)
@@ -298,6 +300,7 @@ class ContributorViewSet(ModelViewSet):
         }
     )
     def destroy(self, request, *args, **kwargs):
+        self.check_permissions(request)
         project_id = self.kwargs.get('project_pk')
         contributor_id = self.kwargs.get('pk')
         try:
