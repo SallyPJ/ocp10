@@ -3,15 +3,31 @@ from .models import Project, Issue, Comment
 from user.models import Contributor
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id', 'name', 'description', 'type', 'author',
+        fields = ['id', 'name', 'type', 'created_time']
+
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source='author.username', read_only=True)
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'description', 'type', 'author','author_username',
                   'created_time']
-        read_only_fields = ['author', 'created_time']
+        read_only_fields = ['author', 'created_time', 'author_username']
 
 
-class IssueSerializer(serializers.ModelSerializer):
+class IssueListSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Issue
+        fields = ['id', 'name', 'priority', 'status', 'author_username', 'author_username', 'created_time']
+        read_only_fields = ['author', 'author_username']
+
+
+class IssueDetailSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)
     assignee_username = serializers.CharField(source='assignee.user.username', read_only=True)
 
@@ -38,7 +54,7 @@ class IssueSerializer(serializers.ModelSerializer):
         """
         Validate that the assignee is a contributor to the project.
         """
-        project = self._get_project()  # Utilise la méthode utilitaire pour obtenir le projet
+        project = self._get_project()
 
         # Check if the assignee is a contributor
         if not Contributor.objects.filter(user=value.user, project=project).exists():
@@ -77,7 +93,7 @@ class CommentSerializer(serializers.ModelSerializer):
         try:
             issue = Issue.objects.get(pk=issue_pk)
             is_contributor = Contributor.objects.filter(user=user, project=issue.project).exists()
-            if not is_contributor:
+            if not (is_contributor or user.is_staff):
                 raise serializers.ValidationError("The author must be a contributor of the project's issue.")
         except Issue.DoesNotExist:
             raise serializers.ValidationError("The issue does not exist.")

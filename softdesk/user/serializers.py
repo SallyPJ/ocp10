@@ -3,7 +3,13 @@ from .models import User, Contributor
 from rest_framework.exceptions import ValidationError
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser']
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'password', 'username', 'age', 'can_be_contacted', 'can_data_be_shared', 'first_name',
@@ -49,7 +55,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ContributorSerializer(serializers.ModelSerializer):
+    user_username = serializers.CharField(source='user.username', read_only=True)
+    project_name = serializers.CharField(source='project.name', read_only=True)
     class Meta:
         model = Contributor
-        fields = ['id', 'user', 'project']
+        fields = ['id', 'user', 'user_username', 'role', 'project', 'project_name']
         read_only_fields = ['id', 'project']

@@ -3,7 +3,7 @@ from drf_yasg import openapi
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.exceptions import ValidationError
 from .models import User, Contributor, Project
-from .serializers import UserSerializer, ContributorSerializer
+from .serializers import UserListSerializer, UserDetailSerializer, ContributorSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -22,8 +22,6 @@ class UserViewSet(ModelViewSet):
         - Partially update user information
         - Delete a user
         """
-    serializer_class = UserSerializer
-
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
@@ -32,6 +30,11 @@ class UserViewSet(ModelViewSet):
         elif self.action == 'list':
             return [IsAdminUser(), IsAuthenticated()]
         return super().get_permissions()  # Default
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return UserListSerializer
+        return UserDetailSerializer
 
     def get_queryset(self):
         return User.objects.all()
@@ -132,7 +135,7 @@ class UserViewSet(ModelViewSet):
         responses={
             200: openapi.Response(
                 description="User updated successfully.",
-                schema=UserSerializer()
+                schema=UserListSerializer()
             ),
             400: openapi.Response(
                 description="Invalid input data.",
@@ -197,8 +200,8 @@ class ContributorViewSet(ModelViewSet):
         # Normal runtime behavior
         project_id = self.kwargs.get('project_pk')
         if project_id:
-            return Contributor.objects.filter(project_id=project_id)
-        return Contributor.objects.all()
+            return Contributor.objects.filter(project_id=project_id).order_by('id')
+        return Contributor.objects.all().order_by('id')
 
     @swagger_auto_schema(
         operation_summary="List contributors",

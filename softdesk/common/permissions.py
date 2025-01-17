@@ -46,14 +46,16 @@ class IsProjectContributorOrAdmin(BasePermission):
         if not project_pk:
             raise PermissionDenied("Le projet n'a pas été spécifié dans l'URL.")
 
-        # Check if the user is a contributor to the project
-        is_contributor = Contributor.objects.filter(
-            project=project_pk,
-            user=request.user
-        ).exists()
-
-        if is_contributor:
-            return True
+        try:
+            # Check if the user is a contributor to the project
+            is_contributor = Contributor.objects.filter(
+                project=project_pk,
+                user=request.user
+            ).exists()
+            if is_contributor:
+                return True
+        except ValueError:
+            raise PermissionDenied("Le paramètre project_pk est invalide ou mal formé.")
 
         # Deny access if the user is neither an admin nor a contributor
         raise PermissionDenied("Vous devez être administrateur ou contributeur pour accéder à cet élément.")

@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from .models import Project, Issue, Comment
 from user.models import Contributor
-from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer
+from .serializers import ProjectDetailSerializer, ProjectListSerializer, IssueListSerializer, IssueDetailSerializer, CommentSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -12,9 +12,6 @@ from rest_framework.exceptions import PermissionDenied
 
 
 class ProjectViewSet(ModelViewSet):
-
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
 
     def get_permissions(self):
         """
@@ -28,6 +25,11 @@ class ProjectViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsProjectManagerOrAdmin()]
         return super().get_permissions()  # Default
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ProjectListSerializer
+        return ProjectDetailSerializer
 
     @swagger_auto_schema(
         operation_summary="List projects",
@@ -61,6 +63,8 @@ class ProjectViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied("Utilisateur non authentifié.")
         if self.request.user.is_staff:
             return Project.objects.all()
         projects = Project.objects.filter(contributors__user=self.request.user)
@@ -270,14 +274,13 @@ class IssueViewSet(ModelViewSet):
     Provides CRUD operations for issues with specific permissions.
     """
 
-    serializer_class = IssueSerializer
-
     lookup_field = 'pk'
 
     def get_queryset(self):
         """
         Retrieve the list of issues for the project specified in the URL.
         """
+
         project_pk = self.kwargs.get('project_pk')  # Récupère l'ID du projet depuis l'URL
         if not project_pk:
             raise PermissionDenied("Le projet n'a pas été spécifié dans l'URL.")
@@ -290,6 +293,11 @@ class IssueViewSet(ModelViewSet):
 
         # Filter issues by project
         return Issue.objects.filter(project=project)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return IssueListSerializer
+        return IssueDetailSerializer
 
     def get_object(self):
         """
